@@ -52,6 +52,19 @@ class MainActivity : AppCompatActivity() {
         file.writeText(beveragesInJson)
     }
 
+    private fun storeDataIntoExternalStorageWithPermission(){
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
+            val beveragesInJson = Gson().toJson(listOfBeverages)
+
+            val file = File(application.getExternalFilesDir("beverages"), "beverages.json")
+            file.writeText(beveragesInJson)
+        } else {
+            requestPermissionLauncher.launch(
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            )
+        }
+
+    }
     private fun readDataFromFile(): List<Beverage>{
         val file = File(application.filesDir, "beverages.json")
         val dataInJson = if(file.exists()) file.readText() else null
@@ -62,6 +75,26 @@ class MainActivity : AppCompatActivity() {
             val listType = object : TypeToken<List<Beverage>>() {}.type
             Gson().fromJson(dataInJson, listType)
         }
+    }
+
+    private fun readDataFromExternalStorageWithPermission(): List<Beverage>? {
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
+            val file = File(application.getExternalFilesDir("beverages"), "beverages.json")
+
+            val dataInJson = if(file.exists()) file.readText() else null
+
+            return if(dataInJson == null) {
+                emptyList()
+            } else {
+                val listType = object : TypeToken<List<Beverage>>() {}.type
+                Gson().fromJson(dataInJson, listType)
+            }
+        }else {
+            requestPermissionLauncher.launch(
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            )
+        }
+        return null
     }
 
     private fun checkStoragePermissionForRetrivia(){
