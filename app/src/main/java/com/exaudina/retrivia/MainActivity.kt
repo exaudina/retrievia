@@ -12,6 +12,8 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.io.File
 import android.Manifest
+import android.content.SharedPreferences
+import android.preference.PreferenceManager
 
 class MainActivity : AppCompatActivity() {
 
@@ -38,11 +40,11 @@ class MainActivity : AppCompatActivity() {
         val beveragesFromCache = readDataFromFile()
 
         val tvBeverageList = findViewById<TextView>(R.id.tv_beverage_list)
-
         tvBeverageList.text = beveragesFromCache.toString()
 
-
         checkStoragePermissionForRetrivia()
+
+        saveValueToSharedPref()
     }
 
     private fun storeDataIntoFile(){
@@ -106,5 +108,13 @@ class MainActivity : AppCompatActivity() {
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
             )
         }
+    }
+
+    private fun saveValueToSharedPref(){
+        val newValue = 10;
+        PreferenceManager.getDefaultSharedPreferences(this)
+            .edit()
+            .putInt("NEW_VALUE_KEY_PREF", newValue)
+            .commit()
     }
 }
