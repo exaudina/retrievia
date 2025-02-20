@@ -1,13 +1,34 @@
 package com.exaudina.retrivia
 
+import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.io.File
+import android.Manifest
 
 class MainActivity : AppCompatActivity() {
+
+    private val requestPermissionLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ){ isGranted ->
+            if(isGranted){
+                val rootView = findViewById<View>(android.R.id.content)
+                Snackbar.make(
+                    rootView,
+                    "Permission is Granted",
+                    Snackbar.LENGTH_LONG
+                ).show()
+            }
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -20,6 +41,8 @@ class MainActivity : AppCompatActivity() {
 
         tvBeverageList.text = beveragesFromCache.toString()
 
+
+        checkStoragePermissionForRetrivia()
     }
 
     private fun storeDataIntoFile(){
@@ -38,6 +61,17 @@ class MainActivity : AppCompatActivity() {
         } else {
             val listType = object : TypeToken<List<Beverage>>() {}.type
             Gson().fromJson(dataInJson, listType)
+        }
+    }
+
+    private fun checkStoragePermissionForRetrivia(){
+        if(ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        ) != PackageManager.PERMISSION_GRANTED){
+            requestPermissionLauncher.launch(
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            )
         }
     }
 }
