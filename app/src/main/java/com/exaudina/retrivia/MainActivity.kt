@@ -12,11 +12,24 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.io.File
 import android.Manifest
+import android.content.Context
 import android.content.SharedPreferences
 import android.preference.PreferenceManager
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
+import androidx.datastore.preferences.preferencesDataStoreFile
+import androidx.lifecycle.LiveData
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 class MainActivity : AppCompatActivity() {
 
+    companion object {
+        const val NEW_VALUE_KEY_PREF = "NEW_VALUE_KEY_PREF"
+    }
     private val requestPermissionLauncher =
         registerForActivityResult(
             ActivityResultContracts.RequestPermission()
@@ -31,6 +44,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+    val Context.dataStore : DataStore<Preferences> by preferencesDataStore(name = "settings")
+    val valueInDataStore = intPreferencesKey(NEW_VALUE_KEY_PREF)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -114,7 +129,18 @@ class MainActivity : AppCompatActivity() {
         val newValue = 10;
         PreferenceManager.getDefaultSharedPreferences(this)
             .edit()
-            .putInt("NEW_VALUE_KEY_PREF", newValue)
+            .putInt(NEW_VALUE_KEY_PREF, newValue)
             .commit()
+    }
+
+    private suspend fun saveValueToSharedPrefDataStore(){
+        application.dataStore.edit {
+            val currentValue = it[valueInDataStore] ?: 0
+            it[valueInDataStore] = currentValue + 1
+        }
+    }
+
+    val valueFromSharedPrefDataStore: Flow<Int> = application.dataStore.data.map {
+        it[valueInDataStore] ?: 0
     }
 }
