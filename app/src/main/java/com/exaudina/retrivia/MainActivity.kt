@@ -60,6 +60,9 @@ class MainActivity : AppCompatActivity() {
         checkStoragePermissionForRetrivia()
 
         saveValueToSharedPref()
+
+        storeDataIntoExternalStorageWithPermission()
+        readDataFromExternalStorageWithPermission()
     }
 
     private fun storeDataIntoFile(){
